@@ -1,13 +1,14 @@
 package br.com.ramiralvesmelo.appclient.controller;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.ui.Model;
 
-@RestController
+@Controller
 public class ApiController {
 
     private final WebClient webClient;
@@ -20,15 +21,12 @@ public class ApiController {
 
     @GetMapping("/")
     public String home() {
-        return """
-                <h1>Portal</h1>
-                <p><a href="/call-api">Chamar API Protegida</a></p>
-                <p><a href="/oauth2/authorization/keycloak">Login</a> | <a href="/logout">Logout</a></p>
-                """;
+        return "index";
     }
 
     @GetMapping("/call-api")
-    public String callApi(@RegisteredOAuth2AuthorizedClient("keycloak") OAuth2AuthorizedClient client) {
+    public String callApi(@RegisteredOAuth2AuthorizedClient("keycloak") OAuth2AuthorizedClient client,
+                          Model model) {
         String response = webClient.get()
             .uri(apiBase + "/api/hello")
             .headers(h -> h.setBearerAuth(client.getAccessToken().getTokenValue()))
@@ -36,6 +34,7 @@ public class ApiController {
             .bodyToMono(String.class)
             .block();
 
-        return "<h2>Resposta da API:</h2><pre>" + response + "</pre>";
+        model.addAttribute("apiResponse", response);
+        return "call-api";
     }
 }
