@@ -23,17 +23,24 @@ sequenceDiagram
   participant R as app-resource (Resource Server)
 
   U->>C: Inicia autenticação
-  C-->>C: Gera Code Verifier e Code Challenge
-  C->>AS: Envia Authorization Code Request + Code Challenge
-  AS->>U: Redireciona para tela de login
-  U->>AS: Usuário envia credenciais
-  AS->>C: Authorization Server valida e devolve Authorization Code
-  C->>AS: Envia Authorization Code + Code Verifier
-  AS-->>AS: Valida se Code Verifier corresponde ao Code Challenge
-  AS->>C: Retorna Access Token
-  C->>R: Chamada à API com Access Token
+  C-->>C: Gera code_verifier e code_challenge
+  C->>AS: Authorization Request (+ code_challenge)
+  AS->>U: Exibe tela de login
+  U->>AS: Envia credenciais
+  AS-->>C: Redireciona com Authorization Code (redirect_uri)
+  C->>AS: Troca Code + code_verifier por tokens (/token)
+  AS-->>C: Retorna access_token (e id_token)
+  C->>R: Chama API com Authorization: Bearer <access_token>
   R-->>C: 200 OK (dados protegidos)
+  C-->>U: Exibe dados da API para o usuário
+
 ```
+
+1. Usuário inicia login no app-client.
+2. O Keycloak (AS) autentica e devolve o código.
+3. O app-client troca por token.
+4. Com o access_token, o app-resource responde.
+5. O app-client apresenta os dados ao usuário.
 
 > 💡 **Observações**
 >
