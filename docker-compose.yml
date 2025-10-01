@@ -26,6 +26,11 @@ services:
     restart: unless-stopped
 
   app-resource:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_MODULE: app-resource
     image: app-resource:1.0.0
     container_name: app-resource
     environment:
@@ -40,6 +45,11 @@ services:
     restart: unless-stopped
 
   app-client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_MODULE: app-client    
     image: app-client:1.0.0
     container_name: app-client
     environment:

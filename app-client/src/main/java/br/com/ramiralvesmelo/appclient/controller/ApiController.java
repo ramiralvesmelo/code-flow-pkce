@@ -27,7 +27,7 @@ public class ApiController {
     public String home() {
         // Log simples de acesso à página inicial
         log.info("Acessando página inicial");
-        return "index"; // retorna para index.jsp
+        return "index";
     }
 
     @GetMapping("/call-api")
@@ -66,7 +66,7 @@ public class ApiController {
             model.addAttribute("apiError", "Falha ao chamar API: " + e.getMessage());
         }
 
-        return "call-api"; // retorna para call-api.jsp
+        return "call-api";
     }
 
 
