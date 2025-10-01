@@ -37,59 +37,30 @@ sequenceDiagram
 ```
 ## 🔑 Fluxo Authorization Code com PKCE
 
-#### 1. Cliente gera valores iniciais
+**1. Cliente gera valores iniciais**
 
-* Cria o **code_verifier** (string aleatória e secreta).
-* A partir dele gera o **code_challenge** (hash SHA-256 + Base64URL).
+* Cria `code_verifier` (string aleatória e secreta)
+* Gera `code_challenge` a partir de `code_verifier` (SHA-256 + Base64URL)
 
-#### 2. Início da autenticação
+**2. Início da autenticação**
+Cliente redireciona o usuário para o **AS** com: `client_id`, `redirect_uri`, `response_type=code`, `scope`, `code_challenge`, `code_challenge_method=S256`
+👉 O AS guarda o `code_challenge`
 
-* Cliente redireciona o usuário para o **Authorization Server (AS)** enviando:
+**3. Autenticação do usuário**
+AS mostra tela → Usuário envia login/senha (ou MFA) → AS valida credenciais
 
-  * `client_id`
-  * `redirect_uri`
-  * `response_type=code`
-  * `scope`
-  * `code_challenge`
-  * `code_challenge_method=S256`
+**4. Emissão do authorization code**
+AS gera `authorization_code` → redireciona para `redirect_uri?code=...`
 
-👉 O **AS** recebe e armazena o `code_challenge`.
+**5. Troca de código por token**
+Cliente chama o token endpoint com: `client_id`, `redirect_uri`, `grant_type=authorization_code`, `code`, `code_verifier`
 
-#### 3. Autenticação do usuário
+**6. Validação no Authorization Server**
+AS verifica se `code_verifier` → hash == `code_challenge` guardado
+Se válido → devolve `access_token`, `id_token` (opcional), `refresh_token` (opcional)
 
-* AS mostra tela de login.
-* Usuário envia login/senha (ou MFA).
-* AS valida credenciais.
-
-####  4. Emissão do authorization code
-
-* Se tudo certo, o AS gera o **authorization_code**.
-* Redireciona o navegador para a `redirect_uri` com esse código.
-
-#### 5. Troca de código por token
-
-* Cliente envia ao **token endpoint**:
-
-  * `client_id`
-  * `redirect_uri`
-  * `grant_type=authorization_code`
-  * `code`
-  * `code_verifier`
-
-#### 6. Validação no Authorization Server
-
-* AS compara se o `code_verifier` enviado pelo cliente gera o mesmo `code_challenge` que ele tinha guardado.
-* Se válido, responde com:
-
-  * `access_token`
-  * `id_token` (se solicitado)
-  * `refresh_token` (se permitido)
-
-#### 7. Acesso à API
-
-* Cliente usa o `access_token` em chamadas para APIs protegidas:
-
-  * `Authorization: Bearer <token>`
+**7. Acesso à API**
+Cliente chama API com: `Authorization: Bearer <access_token>`
 
 ---
 
