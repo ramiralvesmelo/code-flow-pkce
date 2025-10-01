@@ -61,8 +61,8 @@ sequenceDiagram
 
 * **Service:** `keycloak`
 * **Issuer:** `http://keycloak:8080/realms/app-pks-realm`
-* **UI/Admin:** `http://keycloak:8080/`
-* **health/ready:** `http://keycloak:9000/health/ready`
+* **UI/Admin:** [http://keycloak:8080/](http://keycloak:8080/)
+* **health/ready:** [http://keycloak:9000/health/ready](http://keycloak:9000/health/ready)
 
 ### 🖥️ PKCE Client
 
