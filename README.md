@@ -37,12 +37,12 @@ sequenceDiagram
 ```
 ## 🔑 Fluxo Authorization Code com PKCE
 
-### 1. Cliente gera valores iniciais
+#### 1. Cliente gera valores iniciais
 
 * Cria o **code_verifier** (string aleatória e secreta).
 * A partir dele gera o **code_challenge** (hash SHA-256 + Base64URL).
 
-### 2. Início da autenticação
+#### 2. Início da autenticação
 
 * Cliente redireciona o usuário para o **Authorization Server (AS)** enviando:
 
@@ -55,18 +55,18 @@ sequenceDiagram
 
 👉 O **AS** recebe e armazena o `code_challenge`.
 
-### 3. Autenticação do usuário
+#### 3. Autenticação do usuário
 
 * AS mostra tela de login.
 * Usuário envia login/senha (ou MFA).
 * AS valida credenciais.
 
-### 4. Emissão do authorization code
+####  4. Emissão do authorization code
 
 * Se tudo certo, o AS gera o **authorization_code**.
 * Redireciona o navegador para a `redirect_uri` com esse código.
 
-### 5. Troca de código por token
+#### 5. Troca de código por token
 
 * Cliente envia ao **token endpoint**:
 
@@ -76,7 +76,7 @@ sequenceDiagram
   * `code`
   * `code_verifier`
 
-### 6. Validação no Authorization Server
+#### 6. Validação no Authorization Server
 
 * AS compara se o `code_verifier` enviado pelo cliente gera o mesmo `code_challenge` que ele tinha guardado.
 * Se válido, responde com:
@@ -85,7 +85,7 @@ sequenceDiagram
   * `id_token` (se solicitado)
   * `refresh_token` (se permitido)
 
-### 7. Acesso à API
+#### 7. Acesso à API
 
 * Cliente usa o `access_token` em chamadas para APIs protegidas:
 
