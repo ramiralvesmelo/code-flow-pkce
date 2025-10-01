@@ -116,11 +116,9 @@ Mesmo que alguém intercepte o `authorization_code`, **não consegue trocar por 
 
 ## ▶️ Como Rodar?
 
-
+![Fluxo Authorization Code com PKCE](./img/code-flow-pkce.gif)
 
 ### 1. Subir os containers com Docker Compose
-
-![Fluxo Authorization Code com PKCE](./img/code-flow-pkce.gif)
 
 ```sh
 docker compose up -d
