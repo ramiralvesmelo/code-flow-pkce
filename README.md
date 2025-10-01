@@ -35,12 +35,76 @@ sequenceDiagram
   C-->>U: Exibe dados da API para o usuário
 
 ```
+## 🔑 Fluxo Authorization Code com PKCE
 
-1. Usuário inicia login no app-client.
-2. O Keycloak (AS) autentica e devolve o código.
-3. O app-client troca por token.
-4. Com o access_token, o app-resource responde.
-5. O app-client apresenta os dados ao usuário.
+### 1. Cliente gera valores iniciais
+
+* Cria o **code_verifier** (string aleatória e secreta).
+* A partir dele gera o **code_challenge** (hash SHA-256 + Base64URL).
+
+### 2. Início da autenticação
+
+* Cliente redireciona o usuário para o **Authorization Server (AS)** enviando:
+
+  * `client_id`
+  * `redirect_uri`
+  * `response_type=code`
+  * `scope`
+  * `code_challenge`
+  * `code_challenge_method=S256`
+
+👉 O **AS** recebe e armazena o `code_challenge`.
+
+### 3. Autenticação do usuário
+
+* AS mostra tela de login.
+* Usuário envia login/senha (ou MFA).
+* AS valida credenciais.
+
+### 4. Emissão do authorization code
+
+* Se tudo certo, o AS gera o **authorization_code**.
+* Redireciona o navegador para a `redirect_uri` com esse código.
+
+### 5. Troca de código por token
+
+* Cliente envia ao **token endpoint**:
+
+  * `client_id`
+  * `redirect_uri`
+  * `grant_type=authorization_code`
+  * `code`
+  * `code_verifier`
+
+### 6. Validação no Authorization Server
+
+* AS compara se o `code_verifier` enviado pelo cliente gera o mesmo `code_challenge` que ele tinha guardado.
+* Se válido, responde com:
+
+  * `access_token`
+  * `id_token` (se solicitado)
+  * `refresh_token` (se permitido)
+
+### 7. Acesso à API
+
+* Cliente usa o `access_token` em chamadas para APIs protegidas:
+
+  * `Authorization: Bearer <token>`
+
+---
+
+## 📌 Resumo das responsabilidades
+
+* **Cliente:** gera `code_verifier` → cria `code_challenge` → inicia fluxo → envia `code_verifier` no final.
+* **Authorization Server (AS):** guarda `code_challenge` → autentica usuário → emite `authorization_code` → valida `code_verifier` → entrega tokens.
+* **Usuário:** apenas autentica (login/senha, MFA, etc.).
+
+---
+
+## 🔐 Benefício do PKCE
+
+Mesmo que alguém intercepte o `authorization_code`, **não consegue trocar por token** sem o `code_verifier`. Isso protege contra ataques de interceptação (como *authorization code interception attack*).
+
 
 > 💡 **Observações**
 >
