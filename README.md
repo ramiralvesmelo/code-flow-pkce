@@ -56,8 +56,7 @@ AS gera `authorization_code` → redireciona para `redirect_uri?code=...`
 Cliente chama o token endpoint com: `client_id`, `redirect_uri`, `grant_type=authorization_code`, `code`, `code_verifier`
 
 **6. Validação no Authorization Server**
-AS verifica se `code_verifier` → hash == `code_challenge` guardado
-Se válido → devolve `access_token`, `id_token` (opcional), `refresh_token` (opcional)
+AS verifica se `code_verifier` → hash == `code_challenge` guardado. Se válido → devolve `access_token`.
 
 **7. Acesso à API**
 Cliente chama API com: `Authorization: Bearer <access_token>`
