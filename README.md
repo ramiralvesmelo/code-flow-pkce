@@ -51,3 +51,51 @@ sequenceDiagram
 > * **COM PKCE** o `client_secret` fica no Authorization Server.
 
 > * **SEM PKCE** o `client_secret` fica no Client.
+
+
+---
+
+## 🌍 Serviços e Portas
+
+### 🔑 Keycloak
+
+* **Service:** `keycloak`
+* **Issuer:** `http://keycloak:8080/realms/app-pks-realm`
+* **Ports:** `8080` (UI/Admin), `9000` (health)
+* **Host:** `http://keycloak:8080/`
+
+### 🖥️ PKCE Client
+
+* **Service:** `app-client`
+* **Porta:** `8081:8081`
+* **URL:** [http://localhost:8081](http://localhost:8081)
+
+### 🔒 Resource Server
+
+* **Service:** `app-resource`
+* **Porta:** `8082:8082`
+* **URL:** [http://localhost:8082](http://localhost:8082)
+
+---
+
+
+## ▶️ Como Rodar?
+
+### 1. Subir os containers com Docker Compose
+
+```sh
+docker compose up -d
+```
+
+### 2. Acessar as aplicações
+
+* 🌐 **Keycloak (Admin UI):** [http://localhost:8080](http://localhost:8080)
+* 👤 **Login no app-client:** acesse [http://localhost:8081](http://localhost:8081)
+
+  * Usuário: `appclient`
+  * Senha: `appclient`
+
+Após o login, o **app-client** redireciona para o **Keycloak** para autenticação.
+Depois do login bem-sucedido, retorna ao **app-client**, onde é possível clicar em **Chamar API Protegida**.
+
+O **app-client** usará o **Access Token** obtido no Keycloak para consumir a API protegida do **app-resource** em [http://localhost:8082](http://localhost:8082).
