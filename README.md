@@ -23,14 +23,23 @@ sequenceDiagram
   participant R as app-resource (Resource Server)
 
   U->>C: Inicia autenticação
-  C-->>C: Gera Code Verifier e Code Challenge
-  C->>AS: Envia Authorization Code Request + Code Challenge
-  AS->>U: Redireciona para tela de login
-  U->>AS: Usuário envia credenciais
-  AS->>C: Authorization Server valida e devolve Authorization Code
-  C->>AS: Envia Authorization Code + Code Verifier
-  AS-->>AS: Valida se Code Verifier corresponde ao Code Challenge
-  AS->>C: Retorna Access Token
-  C->>R: Chamada à API com Access Token
+  C-->>C: Gera code_verifier e code_challenge (S256)
+  C->>AS: /authorize?response_type=code&client_id=...&redirect_uri=...&scope=openid...&state=...&code_challenge=...&code_challenge_method=S256
+  AS->>U: Exibe tela de login (e consentimento se aplicável)
+  U->>AS: Envia credenciais
+  AS-->>C: Redireciona para redirect_uri com ?code=...&state=...
+  C->>AS: POST /token (grant_type=authorization_code, code, redirect_uri, code_verifier)
+  AS-->>C: Retorna tokens (access_token, id_token[, refresh_token])
+  C->>R: GET/POST ... com Authorization: Bearer <access_token>
   R-->>C: 200 OK (dados protegidos)
 ```
+
+> 💡 **Observações**
+>
+> * O **Authorization Server (AS)** ou **Identity Provider (IdP)**  emite um `authorization code` — um _“ticket”_ de uso único, vinculado ao cliente (e ao redirect_uri), com validade curta (30–60 segundos).
+
+> * No PKCE, o `code verifier` é uma string aleatória e secreta gerada no cliente. O `code challenge` é derivado do code verifier — normalmente `BASE64URL(SHA-256(verifier))`.
+
+> * **COM PKCE** o `client_secret` fica no Authorization Server.
+
+> * **SEM PKCE** o `client_secret` fica no Client.
