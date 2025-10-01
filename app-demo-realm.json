@@ -20,13 +20,13 @@
 
   "users": [
     {
-      "username": "teste",
+      "username": "appclient",
       "enabled": true,
       "emailVerified": true,
       "firstName": "App",
       "lastName": "Client",
       "credentials": [
-        { "type": "password", "value": "teste", "temporary": false }
+        { "type": "password", "value": "appclient", "temporary": false }
       ],
       "realmRoles": ["USER"]
     }

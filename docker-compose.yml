@@ -29,8 +29,8 @@ services:
     image: app-resource:1.0.0
     container_name: app-resource
     environment:
-      SERVER_PORT: 8082
-      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/app-pks-realm
+      SERVER_PORT: 8082      
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/app-pkce-realm
       SPRING_PROFILES_ACTIVE: docker   # ativa o profile "docker"
     ports:
       - "8082:8082"
@@ -44,8 +44,9 @@ services:
     container_name: app-client
     environment:
       SERVER_PORT: 8081
-      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/app-pks-realm
-      SPRING_PROFILES_ACTIVE: docker   # ativa o profile "docker"
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/app-pkce-realm
+      APP_API_BASE: "http://app-resource:8082"
+      SPRING_PROFILES_ACTIVE: docker   # ativa o profile "docker"      
     ports:
       - "8081:8081"   # expõe o cliente em http://localhost:8081
     depends_on:
