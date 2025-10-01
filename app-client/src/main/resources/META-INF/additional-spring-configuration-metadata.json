@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "app.api.base",
+      "type": "java.lang.String",
+      "description": "Base URL da API protegida a ser chamada pelo cliente."
+    }
+  ]
+}

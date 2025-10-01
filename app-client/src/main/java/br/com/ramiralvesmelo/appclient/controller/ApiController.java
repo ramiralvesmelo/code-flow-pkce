@@ -1,78 +1,73 @@
 package br.com.ramiralvesmelo.appclient.controller;
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.security.oauth2.client.annotation.RegisteredOAuth2AuthorizedClient;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.reactive.function.client.WebClient;
 
-@Slf4j
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@RequiredArgsConstructor
 @Controller
+@Slf4j
 public class ApiController {
 
-    private final WebClient webClient;
-    private final String apiBase;
+    private final WebClient.Builder webClientBuilder;
+    private final OAuth2AuthorizedClientManager authorizedClientManager;
 
-    public ApiController(WebClient.Builder builder, @Value("${app.api.base}") String apiBase) {
-        this.webClient = builder.build();
-        this.apiBase = apiBase;
-    }
+    @Value("${app.api.base}")
+    private String apiBase;
 
     @GetMapping("/")
     public String home() {
+        // Log simples de acesso à página inicial
         log.info("Acessando página inicial");
-        return "index";
+        return "index"; // retorna para index.jsp
     }
 
     @GetMapping("/call-api")
-    public String callApi(@RegisteredOAuth2AuthorizedClient("keycloak") OAuth2AuthorizedClient client,
-                          Model model) {
-        log.debug("Chamando API remota em: {}", apiBase);
-
-        String token = client.getAccessToken().getTokenValue();
-        String tokenMask = token != null && token.length() >= 15 ? token.substring(0, 15) + "..." : "<null>";
-        log.trace("Access Token (parcial): {}", tokenMask);
-
+    public String callApi(Authentication authentication, Model model) {
         try {
-            // Se quiser também o status, use toEntity(String.class)
-            String response = webClient.get()
-                .uri(apiBase + "/api/hello")
-                .headers(h -> h.setBearerAuth(token))
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+            log.info("Iniciando chamada à API remota em {}", apiBase);
 
-            log.info("Resposta da API: {}", response);
+            // Monta a requisição de autorização do cliente OAuth2
+            OAuth2AuthorizeRequest authorizeRequest = OAuth2AuthorizeRequest
+                    .withClientRegistrationId("keycloak")
+                    .principal(authentication)
+                    .build();
+
+            // Obtém o client autorizado (com o access token)
+            OAuth2AuthorizedClient client = authorizedClientManager.authorize(authorizeRequest);
+
+            // Extrai o token JWT do Keycloak
+            String token = client.getAccessToken().getTokenValue();
+            log.debug("Access Token obtido (parcial): {}...", 
+                      token.length() > 15 ? token.substring(0, 15) + "..." : token);
+
+            // Faz a chamada à API protegida
+            String response = webClientBuilder.build()
+                    .get()
+                    .uri(apiBase + "/api/hello")
+                    .headers(h -> h.setBearerAuth(token))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            log.info("Chamada à API concluída com sucesso. Resposta recebida.");
             model.addAttribute("apiResponse", response);
-        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
-            // Erros HTTP 4xx/5xx com corpo
-            String body = e.getResponseBodyAsString();
-            log.error("Falha HTTP ao chamar {} - status={} motivo={} corpo={}",
-                    apiBase + "/api/hello", e.getStatusCode().value(), e.getStatusText(), body, e);
-            if (log.isDebugEnabled()) {
-                log.debug("Headers de resposta: {}", e.getHeaders());
-            }
-            model.addAttribute("apiError",
-                    "Erro HTTP " + e.getStatusCode().value() + " ao chamar a API: " + e.getStatusText());
-            model.addAttribute("apiErrorBody", body);
-        } catch (org.springframework.web.reactive.function.client.WebClientRequestException e) {
-            // Problemas de rede/DNS/timeout antes de obter resposta HTTP
-            log.error("Falha de requisição ao chamar {} - causa={}: {}",
-                    apiBase + "/api/hello",
-                    e.getClass().getSimpleName(),
-                    e.getMessage(), e);
-            model.addAttribute("apiError",
-                    "Falha de conexão ao chamar a API (rede/timeout): " + e.getMessage());
+
         } catch (Exception e) {
-            // Qualquer outra falha inesperada
-            log.error("Erro inesperado ao chamar {}: {}", apiBase + "/api/hello", e.getMessage(), e);
-            model.addAttribute("apiError", "Erro inesperado ao chamar a API: " + e.getMessage());
+            log.error("Erro ao chamar API remota: {}", e.getMessage(), e);
+            model.addAttribute("apiError", "Falha ao chamar API: " + e.getMessage());
         }
 
-        return "call-api";
+        return "call-api"; // retorna para call-api.jsp
     }
+
 
 }
