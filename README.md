@@ -60,6 +60,7 @@ sequenceDiagram
 ### 🔑 Keycloak
 
 * **Service:** `keycloak`
+* **Porta:** `8081:8081` e `9000:9000`
 * **Issuer:** `http://keycloak:8080/realms/app-pks-realm`
 * **UI/Admin:** [http://keycloak:8080/](http://keycloak:8080/)
 * **health/ready:** [http://keycloak:9000/health/ready](http://keycloak:9000/health/ready)
